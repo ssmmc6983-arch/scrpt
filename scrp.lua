@@ -1,4 +1,4 @@
--- КРАСИВОЕ ESP МЕНЮ С РАССТОЯНИЕМ
+-- КРАСИВОЕ ESP С КРУПНЫМ ТЕКСТОМ
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -42,7 +42,6 @@ MinimizeButton.Position = UDim2.new(1, -60, 0, 10)
 MinimizeButton.Text = "−"
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 180, 60)
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.TextSize = 18
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Parent = MainFrame
@@ -72,6 +71,40 @@ Title.Parent = MainFrame
 -- Переменные
 local ESPEnabled = false
 local ESPTable = {}
+
+-- Функция для получения оружия в руках
+local function getWeaponInHands(character)
+    if not character then return "None" end
+    
+    -- Проверяем правую руку
+    local rightHand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+    if rightHand then
+        for _, tool in ipairs(rightHand:GetChildren()) do
+            if tool:IsA("Tool") then
+                return tool.Name
+            end
+        end
+    end
+    
+    -- Проверяем левую руку
+    local leftHand = character:FindFirstChild("LeftHand") or character:FindFirstChild("Left Arm")
+    if leftHand then
+        for _, tool in ipairs(leftHand:GetChildren()) do
+            if tool:IsA("Tool") then
+                return tool.Name
+            end
+        end
+    end
+    
+    -- Проверяем инвентарь персонажа
+    for _, tool in ipairs(character:GetChildren()) do
+        if tool:IsA("Tool") and tool.Parent == character then
+            return tool.Name
+        end
+    end
+    
+    return "None"
+end
 
 -- Стильная функция создания кнопки
 local function createStyledButton(text, yPos, callback)
@@ -105,7 +138,7 @@ local function createStyledButton(text, yPos, callback)
     return button
 end
 
--- КРАСИВЫЙ ESP С РАССТОЯНИЕМ И ХАЙЛАЙТАМИ
+-- КРАСИВЫЙ ESP С КРУПНЫМ ТЕКСТОМ
 local function toggleVisionESP()
     ESPEnabled = not ESPEnabled
     
@@ -142,71 +175,82 @@ local function toggleVisionESP()
                     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                     highlight.Parent = character
                     
-                    -- Красивое имя игрока
-                    local nameBillboard = Instance.new("BillboardGui")
-                    nameBillboard.Name = "VisionName"
-                    nameBillboard.Adornee = head
-                    nameBillboard.Size = UDim2.new(0, 200, 0, 30)
-                    nameBillboard.StudsOffset = Vector3.new(0, 3.2, 0)
-                    nameBillboard.AlwaysOnTop = true
-                    nameBillboard.MaxDistance = 200
+                    -- ОСНОВНОЙ БИЛБОРД С КРУПНЫМ ТЕКСТОМ
+                    local mainBillboard = Instance.new("BillboardGui")
+                    mainBillboard.Name = "VisionInfo"
+                    mainBillboard.Adornee = head
+                    mainBillboard.Size = UDim2.new(0, 280, 0, 100) -- Увеличил размер
+                    mainBillboard.StudsOffset = Vector3.new(0, 5, 0) -- Поднял выше
+                    mainBillboard.AlwaysOnTop = true
+                    mainBillboard.MaxDistance = 200
                     
+                    -- Фон для информации
+                    local background = Instance.new("Frame")
+                    background.Size = UDim2.new(1, 0, 1, 0)
+                    background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    background.BackgroundTransparency = 0.6 -- Меньше прозрачности
+                    background.BorderSizePixel = 0
+                    background.Parent = mainBillboard
+                    
+                    -- Имя игрока (верхняя строка) - КРУПНЫЙ ТЕКСТ
                     local nameLabel = Instance.new("TextLabel")
-                    nameLabel.Text = "「 " .. player.Name .. " 」"
-                    nameLabel.Size = UDim2.new(1, 0, 1, 0)
+                    nameLabel.Text = "👤 " .. player.Name
+                    nameLabel.Size = UDim2.new(1, 0, 0, 25) -- Выше строка
+                    nameLabel.Position = UDim2.new(0, 0, 0, 0)
                     nameLabel.BackgroundTransparency = 1
                     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
                     nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                    nameLabel.TextStrokeTransparency = 0.2
-                    nameLabel.TextSize = 12
+                    nameLabel.TextStrokeTransparency = 0.1 -- Толще обводка
+                    nameLabel.TextSize = 14 -- Увеличил размер
                     nameLabel.Font = Enum.Font.GothamBold
-                    nameLabel.Parent = nameBillboard
+                    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    nameLabel.Parent = mainBillboard
                     
-                    nameBillboard.Parent = head
-                    
-                    -- Дистанция с иконкой
-                    local distanceBillboard = Instance.new("BillboardGui")
-                    distanceBillboard.Name = "VisionDistance"
-                    distanceBillboard.Adornee = head
-                    distanceBillboard.Size = UDim2.new(0, 150, 0, 25)
-                    distanceBillboard.StudsOffset = Vector3.new(0, 2.0, 0)
-                    distanceBillboard.AlwaysOnTop = true
-                    distanceBillboard.MaxDistance = 200
-                    
+                    -- Дистанция (вторая строка) - КРУПНЫЙ ТЕКСТ
                     local distanceLabel = Instance.new("TextLabel")
-                    distanceLabel.Text = "📏 0m"
-                    distanceLabel.Size = UDim2.new(1, 0, 1, 0)
+                    distanceLabel.Text = "📏 Distance: 0m"
+                    distanceLabel.Size = UDim2.new(1, 0, 0, 22) -- Выше строка
+                    distanceLabel.Position = UDim2.new(0, 0, 0, 25)
                     distanceLabel.BackgroundTransparency = 1
                     distanceLabel.TextColor3 = Color3.fromRGB(150, 255, 255)
-                    distanceLabel.TextStrokeTransparency = 0.5
-                    distanceLabel.TextSize = 11
-                    distanceLabel.Font = Enum.Font.Gotham
-                    distanceLabel.Parent = distanceBillboard
+                    distanceLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    distanceLabel.TextStrokeTransparency = 0.1 -- Толще обводка
+                    distanceLabel.TextSize = 13 -- Увеличил размер
+                    distanceLabel.Font = Enum.Font.GothamBold -- Жирный шрифт
+                    distanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    distanceLabel.Parent = mainBillboard
                     
-                    distanceBillboard.Parent = head
+                    -- Оружие (третья строка) - КРУПНЫЙ ТЕКСТ
+                    local weaponLabel = Instance.new("TextLabel")
+                    weaponLabel.Text = "🔫 Weapon: None"
+                    weaponLabel.Size = UDim2.new(1, 0, 0, 22) -- Выше строка
+                    weaponLabel.Position = UDim2.new(0, 0, 0, 47)
+                    weaponLabel.BackgroundTransparency = 1
+                    weaponLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+                    weaponLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    weaponLabel.TextStrokeTransparency = 0.1 -- Толще обводка
+                    weaponLabel.TextSize = 13 -- Увеличил размер
+                    weaponLabel.Font = Enum.Font.GothamBold -- Жирный шрифт
+                    weaponLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    weaponLabel.Parent = mainBillboard
                     
-                    -- Здоровье (если есть)
-                    local healthBillboard = Instance.new("BillboardGui")
-                    healthBillboard.Name = "VisionHealth"
-                    healthBillboard.Adornee = head
-                    healthBillboard.Size = UDim2.new(0, 120, 0, 20)
-                    healthBillboard.StudsOffset = Vector3.new(0, 1.2, 0)
-                    healthBillboard.AlwaysOnTop = true
-                    healthBillboard.MaxDistance = 150
-                    
+                    -- Здоровье (четвертая строка) - КРУПНЫЙ ТЕКСТ
                     local healthLabel = Instance.new("TextLabel")
-                    healthLabel.Text = "❤️ 100%"
-                    healthLabel.Size = UDim2.new(1, 0, 1, 0)
+                    healthLabel.Text = "❤️ Health: 100%"
+                    healthLabel.Size = UDim2.new(1, 0, 0, 22) -- Выше строка
+                    healthLabel.Position = UDim2.new(0, 0, 0, 69)
                     healthLabel.BackgroundTransparency = 1
                     healthLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-                    healthLabel.TextStrokeTransparency = 0.5
-                    healthLabel.TextSize = 10
-                    healthLabel.Font = Enum.Font.Gotham
-                    healthLabel.Parent = healthBillboard
+                    healthLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    healthLabel.TextStrokeTransparency = 0.1 -- Толще обводка
+                    healthLabel.TextSize = 13 -- Увеличил размер
+                    healthLabel.Font = Enum.Font.GothamBold -- Жирный шрифт
+                    healthLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    healthLabel.Parent = mainBillboard
                     
-                    healthBillboard.Parent = head
+                    mainBillboard.Parent = head
                     
-                    -- Обновление дистанции и здоровья
+                    -- Обновление информации
                     local connection
                     connection = RunService.Heartbeat:Connect(function()
                         if not character or not character.Parent then
@@ -218,7 +262,7 @@ local function toggleVisionESP()
                         local playerRoot = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                         if playerRoot then
                             local distance = (playerRoot.Position - humanoidRootPart.Position).Magnitude
-                            distanceLabel.Text = "📏 " .. math.floor(distance) .. "m"
+                            distanceLabel.Text = "📏 Distance: " .. math.floor(distance) .. "m"
                             
                             -- Меняем цвет в зависимости от дистанции
                             if distance < 20 then
@@ -230,11 +274,35 @@ local function toggleVisionESP()
                             end
                         end
                         
+                        -- Обновление оружия
+                        local weapon = getWeaponInHands(character)
+                        local weaponIcon = "🔫"
+                        
+                        -- Выбираем иконку для оружия
+                        if weapon ~= "None" then
+                            weaponLabel.TextColor3 = Color3.fromRGB(255, 150, 50)
+                            if string.lower(weapon):find("sword") or string.lower(weapon):find("blade") then
+                                weaponIcon = "⚔️"
+                            elseif string.lower(weapon):find("gun") or string.lower(weapon):find("pistol") or string.lower(weapon):find("rifle") then
+                                weaponIcon = "🔫"
+                            elseif string.lower(weapon):find("bow") or string.lower(weapon):find("arrow") then
+                                weaponIcon = "🏹"
+                            elseif string.lower(weapon):find("hammer") or string.lower(weapon):find("axe") then
+                                weaponIcon = "🪓"
+                            else
+                                weaponIcon = "🛠️"
+                            end
+                            weaponLabel.Text = weaponIcon .. " Weapon: " .. weapon
+                        else
+                            weaponLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                            weaponLabel.Text = "✋ Weapon: None"
+                        end
+                        
                         -- Обновление здоровья
                         local humanoid = character:FindFirstChild("Humanoid")
                         if humanoid then
                             local healthPercent = math.floor((humanoid.Health / humanoid.MaxHealth) * 100)
-                            healthLabel.Text = "❤️ " .. healthPercent .. "%"
+                            healthLabel.Text = "❤️ Health: " .. healthPercent .. "%"
                             
                             -- Меняем цвет здоровья
                             if healthPercent < 25 then
@@ -249,9 +317,7 @@ local function toggleVisionESP()
                     
                     ESPTable[player] = {
                         highlight = highlight,
-                        nameBillboard = nameBillboard,
-                        distanceBillboard = distanceBillboard,
-                        healthBillboard = healthBillboard,
+                        mainBillboard = mainBillboard,
                         connection = connection
                     }
                 end
@@ -274,9 +340,7 @@ local function toggleVisionESP()
         -- Выключаем ESP
         for player, espData in pairs(ESPTable) do
             if espData.highlight then espData.highlight:Destroy() end
-            if espData.nameBillboard then espData.nameBillboard:Destroy() end
-            if espData.distanceBillboard then espData.distanceBillboard:Destroy() end
-            if espData.healthBillboard then espData.healthBillboard:Destroy() end
+            if espData.mainBillboard then espData.mainBillboard:Destroy() end
             if espData.connection then espData.connection:Disconnect() end
         end
         ESPTable = {}
@@ -312,7 +376,7 @@ MainFrame.Parent = ScreenGui
 ScreenGui.Parent = Player.PlayerGui
 
 print("=== VISION ESP MENU LOADED ===")
-print("👁️ Стильный ESP с расстоянием и здоровьем")
-print("🎨 Красивый дизайн с анимациями")
-print("📏 Дистанция с цветовой индикацией")
-print("❤️ Отображение здоровья игроков")
+print("👁️ Красивый ESP с КРУПНЫМ текстом")
+print("📏 Увеличенные размеры шрифта")
+print("🔠 Жирный шрифт для лучшей читаемости")
+print("🎯 Четкое отображение информации")
